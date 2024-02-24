@@ -75,7 +75,7 @@ def exportObjectsToPython(doc = app.activeDocument()):
             if obj.Tip:
                 addScript("%s.Tip = %s"%(varname(obj), varname(obj.Tip))) 
             
-    addScript('') 
+    #addScript('') 
     addScript('doc.recompute()') 
     addScriptFunc('')
     addScriptFunc('')
@@ -336,45 +336,88 @@ def addSketch(obj, objname):
 
         if con.Type == 'Coincident':
             conargs = "%s, %d, %s, %d"%(first, con.FirstPos, sec, con.SecondPos)
+        
         elif con.Type == 'PointOnObject':
             conargs = "%s, %d, %s"%(first, con.FirstPos, sec)
+        
         elif con.Type == 'Vertical':
-            conargs = str(first)
+            if con.Second == -2000:
+                conargs = str(first) #line
+            else:
+                conargs = "%s, %d, %s, %d"%(first, con.FirstPos, sec, con.SecondPos) #two points
+        
         elif con.Type == 'Horizontal':
-            conargs = str(first)
+            if con.Second == -2000:
+                conargs = str(first)
+            else:
+                conargs = "%s, %d, %s, %d"%(first, con.FirstPos, sec, con.SecondPos)
+        
         elif con.Type == 'Parallel':
             conargs = "%s, %s"%(first, sec)
+        
         elif con.Type == 'Perpendicular':
-            conargs = "%s, %s"%(first, sec)
-        elif con.Type == 'Tangent':
-            if sec == -2000:
-                conargs = "%s, %d"%(first, con.FirstPos)
-            elif con.Third == -2000:
-                conargs = "%s, %d, %s, %d"%(first, con.FirstPos, sec, con.SecondPos)
+            if con.FirstPos == 0:
+                conargs = "%s, %s"%(first, sec)
+            elif con.SecondPos ==0:
+                conargs = "%s, %d, %s"%(first, con.FirstPos, sec)
             else:
-                contype = 'TangentViaPoint'
-                conargs = "%s, %s, %s, %d"%(first, sec, third, con.ThirdPos)
+                conargs = "%s, %d, %s, %d"%(first, con.FirstPos, sec, con.SecondPos)
+        
+        elif con.Type == 'PerpendicularViaPoint':
+            conargs = "%s, %s, %s, %d"%(first, sec, third, con.ThirdPos)
+        
+        elif con.Type == 'Tangent':
+            if con.Second < 0:
+                conargs = "%s, %d"%(first, con.FirstPos)
+            elif con.SecondPos == 0:
+                conargs = "%s, %d, %s"%(first, con.FirstPos, sec)
+            else:
+                conargs = "%s, %d, %s, %d"%(first, con.FirstPos, sec, con.SecondPos)
+        
+        elif con.Type == 'TangentViaPoint':
+            conargs = "%s, %s, %s, %d"%(first, sec, third, con.ThirdPos)
+        
         elif con.Type == 'Equal':
             conargs = "%s, %s"%(first, sec)
+        
         elif con.Type == 'Symmetric':
-            conargs = "%s, %d, %s, %d, %s, %d"%(first, con.FirstPos, sec, con.SecondPos, third, con.ThirdPos)
+            if con.ThirdPos == 0:
+                conargs = "%s, %d, %s, %d, %s"%(first, con.FirstPos, sec, con.SecondPos, third)
+            else:
+                conargs = "%s, %d, %s, %d, %s, %d"%(first, con.FirstPos, sec, con.SecondPos, third, con.ThirdPos)
+        
         elif con.Type == 'Block':
             conargs = str(first)
+        
         elif con.Type == 'Distance':
             if con.Second == -2000:
                 conargs = "%s, %s"%(first, floatstr(con.Value))
+            elif con.FirstPos == 0:
+                conargs = "%s, %s, %s"%(first, sec, floatstr(con.Value))
+            elif con.SecondPos == 0:
+                conargs = "%s, %d, %s, %s"%(first, con.FirstPos, sec, floatstr(con.Value))
             else:
                 conargs = "%s, %d, %s, %d, %s"%(first, con.FirstPos, sec, con.SecondPos, floatstr(con.Value))
+        
         elif con.Type == 'DistanceX' or con.Type == 'DistanceY':
             if con.Second == -2000:
                 conargs = "%s, %d, %s"%(first, con.FirstPos, floatstr(con.Value))
             else:
                 conargs = "%s, %d, %s, %d, %s"%(first, con.FirstPos, sec, con.SecondPos, floatstr(con.Value))
-        elif con.Type == 'Weight' or con.Type == 'Radius':
+        
+        elif con.Type == 'Angle':
+            if con.FirstPos == 0:
+                conargs = "%s, %s, %s"%(first, sec, floatstr(con.Value))
+            else:
+                conargs = "%s, %d, %s, %d, %s"%(first, con.FirstPos, sec, con.SecondPos, floatstr(con.Value))
+        
+        elif con.Type == 'AngleViaPoint':
+            conargs = "%s, %s, %s, %s"%(first, sec, third, floatstr(con.Value))
+        
+        elif con.Type == 'Weight' or con.Type == 'Radius' or con.Type == 'Diameter':
             conargs = "%s, %s"%(first, floatstr(con.Value))
             splinecount = 0
-        elif con.Type == 'Angle':
-            conargs = "%s, %d, %s, %d, %s"%(first, con.FirstPos, sec, con.SecondPos, floatstr(con.Value))
+        
         elif con.Type == 'InternalAlignment':
             if con.Second > con.First:
                 contype = 'InternalAlignment:Sketcher::BSplineControlPoint'
@@ -383,6 +426,7 @@ def addSketch(obj, objname):
                 splinecount = splinecount + 1
             else:
                 conargs = None
+        
         elif con.Type == 'Weight':
             conargs = "%s, %s"%(first, floatstr(con.Value))
 
@@ -408,7 +452,8 @@ def addSpreadsheet(obj, objname):
     addScript('doc.recompute()')   
       
 def floatstr(f):
-    return '{:.2f}'.format(f)
+    #return '{:.2f}'.format(f)
+    return str(f)
      
 def vecstr(v):
     return 'Vector(' + floatstr(v.x) + ', ' + floatstr(v.y) + ', ' + floatstr(v.z) + ')'
