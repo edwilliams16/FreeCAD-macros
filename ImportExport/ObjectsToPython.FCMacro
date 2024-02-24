@@ -219,16 +219,15 @@ def objectToText(obj, objectlist = []):
                 return "Part.Ellipse(%s, %s, %s)"%(vecstr(obj.Center), obj.MajorRadius, obj.MinorRadius)
             
             if isinstance(obj, Part.BSplineCurve):
-                poles = ''
-                komma = False
-                for p in obj.getPoles():
-                    if komma:
-                        poles += ', '
-                    poles += vecstr(p)
-                    komma = True
-                    
-                return "Part.BSplineCurve([%s])"%poles
-                
+                poles = obj.getPoles().__repr__()
+                mults = obj.getMultiplicities().__repr__()
+                knots =  obj.getKnots().__repr__()
+                periodic = obj.isPeriodic().__repr__()
+                degree =  obj.Degree.__repr__()
+                weights = obj.getWeights().__repr__()
+                CheckRational = obj.isRational().__repr__()
+                return f'Part.BSplineCurve({poles}, mults = {mults}, knots = {knots}, periodic = {periodic}, degree = {degree}, weights = {weights}, CheckRational = {CheckRational})'
+                            
             if isinstance(obj, Part.Parabola):
                 return "Part.Parabola(%s, %s, %s)"%(vecstr(obj.Focus), vecstr(obj.Location), vecstr(obj.Axis))
                 
